@@ -4,7 +4,7 @@ filename = "objects.json"
 
 class Object:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def __init__(self, number, centreX, centreY,point1, point2, point3, point4):
+    def __init__(self, number, centreX, centreY,point1, point2, point3, point4, ang):
         self.number = number
         self.centreX = centreX
         self.centreY = centreY
@@ -12,17 +12,18 @@ class Object:
         self.point2 = point2
         self.point3 = point3
         self.point4 = point4
+        self.angle = ang
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     def print_info(self):
-     print(self.number, self.centreX, self.centreY, self.point1, self.point2, self.point3, self.point4)
+     print(self.number, self.centreX, self.centreY, self.point1, self.point2, self.point3, self.point4, self.angle)
 
     def save_to_json(self, filename):
         object_dict = {'object num': self.number, 'centre X': self.centreX,'centre Y': self.centreY,'p1': self.point1,
-                       'p2':self.point2,'p3': self.point3,'p4':self.point4}
+                       'p2':self.point2,'p3': self.point3,'p4':self.point4, 'angle': self.angle}
         with open(filename, 'w') as f:
             f.write(json.dumps(object_dict, indent= 1,separators=(',',': ')))
 
@@ -38,15 +39,16 @@ class Object:
         self.point2 = data['point2']
         self.point3 = data['point3']
         self.point4 = data['point4']
+        self.angle = data['angle']
 
 
-    def add_to_file(self, filename, number, centreX, centreY,point1, point2, point3, point4):
+    def add_to_file(self, filename, number, centreX, centreY,point1, point2, point3, point4, angle):
 
         with open(filename) as f:
             dic = json.load(f)
 
         x = {'object num': number, "centre X": centreX, "centre Y": centreY, 'p1': point1, 'p2': point2, 'p3': point3,
-             'p4': point4}
+             'p4': point4, 'angle': angle}
 
         dic["objects"].append(x)
 

@@ -1,15 +1,20 @@
-
-import numpy as np
-import __main__
-
-from PIL import Image, ImageChops
-import numpy as np
 import cv2
+import numpy as np
+from PIL import Image, ImageChops
+import matplotlib as plt
 
 from objectDataSave import *
 
-
 list_of = []
+
+# def gradient(p1,p2):
+#     return ()
+#
+# def angle(a,b,c,d):
+
+
+
+
 
 
 def try_again():
@@ -87,7 +92,7 @@ def detect_object():
                 print("object: ", i, "object centre is at: ", c[0])
 
 
-                # cv2.rectangle(img4, (x, y), (x + w, y + h), (0, 255, 5), 5)
+                #cv2.rectangle(img4, (x, y), (x + w, y + h), (0, 255, 5), 5)
                 rect = cv2.minAreaRect(c)
 
 
@@ -97,6 +102,27 @@ def detect_object():
                 cv2.drawContours(img4, [box], 0, (0, 255, 0), 1)
                 cv2.circle(img4, (cX, cY), 5, (255, 255, 255), -1)
                 cv2.putText(img4, "object:" + str(i), (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 1)
+                cv2.circle(img4, (cX, cY), 5, (255, 255, 255), -1)
+
+                angle = rect[-1]
+
+                print(h)
+                print(w)
+
+                h  =  rect[-2]
+
+
+                print(h)
+
+                if angle < -45:
+                    angle = -(90 + angle)
+
+                else:
+                    angle = -angle
+
+                print(angle)
+
+
 
                 print(box)
                 print("''''''''''''")
@@ -126,11 +152,11 @@ def detect_object():
 
 
 
-                object = Object(i,cX, cY,p1, p2, p3, p4)
+                object = Object(i,cX, cY,p1, p2, p3, p4, angle)
                 print("filesave...")
                 #object.print_info()
                 #object.save_to_json("objects.json")
-                object.add_to_file("objects.json", i, cX, cY, p1, p2, p3, p4)
+                object.add_to_file("objects.json", i, cX, cY, p1, p2, p3, p4, angle)
                 print("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
 
 
