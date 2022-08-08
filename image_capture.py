@@ -7,12 +7,62 @@ from objectDataSave import *
 
 list_of = []
 
+object_number = 1
+
+
 # def gradient(p1,p2):
 #     return ()
 #
 # def angle(a,b,c,d):
 
+# def object_filter(w,h):
+#     surface_area = (w*h)
+#     reference_size = x
+#     if
 
+
+def init_new_json_file():
+
+    object_number = cX = cY = p1 = p2 = p3 = p4 = angle = w = h = "-"
+    object = Object(object_number, cX, cY, p1, p2, p3, p4, angle,w,h)
+    object.save_to_json(filename)
+
+
+
+
+# function to seperte x,y of objects from objects
+def jsonReadTest():
+    j = open("objects.json", 'r')
+    data= j.read()
+    obj = json.loads(data)
+    list = obj['objects']
+    e = list[3].get("p1")
+    e = e.split(" ")
+
+    x = e[0]
+    y = e[1]
+    x=x.replace("[", "")
+    y=y.replace("]", "")
+    int(x)
+    int(y)
+
+    print(x, y)
+
+
+
+
+
+def specify_object():
+
+    j = open("objects.json", 'r')
+    data= j.read()
+    obj = json.loads(data)
+    list = obj['objects']
+    print(list)
+
+    usr_inp = int(input("Specify object to focus on (enter single digit) \n"))
+
+    print(list[usr_inp])
 
 
 
@@ -20,6 +70,9 @@ list_of = []
 def try_again():
     usr_inp = int(input("Would you like to try again or use this data?\n Press 1 to try again from start \n Press 2 to re-do "
                     "from object addtion \n Press 3 to exit\n"))
+
+    jsonReadTest()
+
     if usr_inp == 1:
         image_intro()
     elif usr_inp == 2:
@@ -32,6 +85,7 @@ def try_again():
 
 
 def detect_object():
+    global object_number
 
     img1 = Image.open('image_base.jpg')
     img2 = Image.open('image_objects.jpg')
@@ -66,6 +120,7 @@ def detect_object():
     print("number of cnt", len(cont))
 
     for (i, c) in enumerate(cont):
+
         # alternative method that draws around contours
         # epsilon = 0.01* cv2.arcLength(cnt,True)
         # approx = cv2.approxPolyDP(cnt, epsilon, True)
@@ -80,7 +135,13 @@ def detect_object():
 
             x, y, h, w = cv2.boundingRect(c)
             print(w*h)
+
+            #altert values to specify size
+
             if (w*h) >= 1000:
+
+
+
                 M = cv2.moments(c)
                 if M["m00"] != 0:
                   cX = int(M["m10"] / M["m00"])
@@ -89,7 +150,7 @@ def detect_object():
                  # set values as what you need in the situation
                  cX, cY = 0, 0
 
-                print("object: ", i, "object centre is at: ", c[0])
+                print("object: ", object_number, "object centre is at: ", c[0])
 
 
                 #cv2.rectangle(img4, (x, y), (x + w, y + h), (0, 255, 5), 5)
@@ -101,7 +162,7 @@ def detect_object():
                 box = np.int0(box)
                 cv2.drawContours(img4, [box], 0, (0, 255, 0), 1)
                 cv2.circle(img4, (cX, cY), 5, (255, 255, 255), -1)
-                cv2.putText(img4, "object:" + str(i), (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 1)
+                cv2.putText(img4, "object:" + str(object_number), (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 1)
                 cv2.circle(img4, (cX, cY), 5, (255, 255, 255), -1)
 
                 angle = rect[-1]
@@ -109,8 +170,7 @@ def detect_object():
                 print(h)
                 print(w)
 
-                h  =  rect[-2]
-
+               # h  =  rect[-2]
 
                 print(h)
 
@@ -122,16 +182,7 @@ def detect_object():
 
                 print(angle)
 
-
-
-                print(box)
                 print("''''''''''''")
-                # print(box[0])
-                # print(box[1])
-                # print(box[2])
-                # print(box[3])
-
-
 
                 p1 = box[0]
                 p1 = str(p1)
@@ -151,13 +202,24 @@ def detect_object():
 
 
 
+                for (x, y) in box:
+                    cv2.circle(img4, (int(x), int(y)), 5, (0, 0, 255), -1)
+                    cv2.putText(img4,str((int(x),int(y))), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 0), 1)
 
-                object = Object(i,cX, cY,p1, p2, p3, p4, angle)
+
+
+
+
+
+                object = Object(object_number,cX, cY,p1, p2, p3, p4, angle,w,h)
                 print("filesave...")
                 #object.print_info()
                 #object.save_to_json("objects.json")
-                object.add_to_file("objects.json", i, cX, cY, p1, p2, p3, p4, angle)
+                object.add_to_file("objects.json", object_number, cX, cY, p1, p2, p3, p4, angle,w,h)
                 print("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
+
+                #object counter for the session (starts at 1)
+                object_number = object_number+1
 
 
 
@@ -247,15 +309,17 @@ def take_pic():
 
 
 def image_intro():
-    usr_input = int(input("select option to begin \n Workspace layout image 1: Press 1 \n Option 2: Press 2 \n"))
+    usr_input = int(input("select option to begin \n Workspace layout image 1: Press 1 \n Clear json: Press 2 \n\n\n"))
 
-    print(usr_input)
+    print(usr_input,"\n")
 
     if usr_input == 1:
         take_pic()
 
     elif usr_input == 2:
-        print("not done")
+        init_new_json_file()
+        print("json file reset with formatting ...\n")
+        image_intro()
 
     else:
         print("invalid input")
