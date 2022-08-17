@@ -240,18 +240,18 @@ def adding_objects():
 
     if usr_inp6 == "1":
         print("Taking the Image...\n")
-        # cap = cv2.VideoCapture(0)  # video capture source camera (Here webcam of laptop)
-        # ret, frame = cap.read()  # return a single frame in variable `frame`
-        #
-        # cv2.imshow('object image', frame)
-        # cv2.waitKey(6)
+        cap = cv2.VideoCapture(0)  # video capture source camera (Here webcam of laptop)
+        ret, frame = cap.read()  # return a single frame in variable `frame`
+
+        cv2.imshow('object image', frame)
+        cv2.waitKey(6)
 
         usr_inp3 = input("Is the image satisfactory? y/n \n")
 
         if usr_inp3 == "y":
-            # cv2.imwrite('image_objects.jpg', frame)
-            # cv2.destroyAllWindows()
-            # cap.release()
+            cv2.imwrite('image_objects.jpg', frame)
+            cv2.destroyAllWindows()
+            cap.release()
 
             detect_object()
 
@@ -268,11 +268,11 @@ def adding_objects():
 
 def take_pic():
 
-    # cap = cv2.VideoCapture(0) # video capture source camera (Here webcam of laptop)
-    # ret,frame = cap.read() # return a single frame in variable `frame`
-    #
-    # cv2.imshow('img1', frame)
-    # cv2.waitKey(6)
+    cap = cv2.VideoCapture(0) # video capture source camera (Here webcam of laptop)
+    ret,frame = cap.read() # return a single frame in variable `frame`
+
+    cv2.imshow('img1', frame)
+    cv2.waitKey(6)
     
     usr_inpiut2 = input("Is the image satisfactory? y/n \n")
 
@@ -280,9 +280,9 @@ def take_pic():
     if usr_inpiut2 == "y":
 
         print("Done...")
-        # cv2.imwrite('image_base.jpg', frame)
-        # cv2.destroyAllWindows()
-        # cap.release()
+        cv2.imwrite('image_base.jpg', frame)
+        cv2.destroyAllWindows()
+        cap.release()
 
         adding_objects()
 
