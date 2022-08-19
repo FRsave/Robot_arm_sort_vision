@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from PIL import Image, ImageChops
+import cv2.aruco as aruco
 import matplotlib as plt
 
 from objectDataSave import *
@@ -19,6 +20,10 @@ object_number = 1
 #     surface_area = (w*h)
 #     reference_size = x
 #     if
+
+
+
+
 
 
 def init_new_json_file():
@@ -91,6 +96,9 @@ def detect_object():
     img2 = Image.open('image_objects.jpg')
 
     diff = ImageChops.difference(img1, img2)
+
+    aruco_image_flatten()
+
 
     if diff.getbbox():
         # diff.show()
@@ -231,7 +239,75 @@ def detect_object():
 
     try_again()
 
+# ArUco marker code inspired from:
+#https://www.linuxtut.com/en/c6e468da7007734c897f/
 
+
+def aruco_image_flatten():
+
+
+
+    Image_to_flatten = Image.open('image_objects.jpg')
+
+
+
+
+    print(Image_to_flatten)
+    aruco = cv2.aruco
+    p_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
+    img = cv2.imread(Image_to_flatten)  # image_objects.jpg
+    # cv2.imshow("Image check", img)
+    # cv2.waitKey(5)
+
+    corners, ids, rejectedImgPoints = aruco.detectMarkers(img, p_dict)  # detection
+    n = len(ids)
+    print(n)
+    if n < 4:
+        img = cv2.imread(Image_to_flatten)
+        img_marked = aruco.drawDetectedMarkers(img.copy(), corners, ids)  # Overlay detection results
+
+        aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)
+        parameters = aruco.DetectorParameters_create()
+
+        corners, ids, rejectedImgPoints = aruco.detectMarkers(
+            img_marked, aruco_dict, parameters=parameters)
+        print(corners)
+        cv2.imshow("w", img_marked)
+        print("Less then 4 markers in image")
+        return
+
+
+
+
+    #print(corners)# for testing purposes (4 corners are necessary to be functional)
+
+    # Store the "center coordinates" of the marker in m in order from the upper left in the clockwise direction.
+    m = np.empty((4, 2))
+    for i, c in zip(ids.ravel(), corners):
+        m[i] = c[0].mean(axis=0)
+
+    width, height = (1500, 1500)  # Image size after transformation
+
+    marker_coordinates = np.float32(m)
+    true_coordinates = np.float32([[0, 0], [width, 0], [width, height], [0, height]])
+    trans_mat = cv2.getPerspectiveTransform(marker_coordinates, true_coordinates)
+    img_trans = cv2.warpPerspective(img, trans_mat, (width, height))
+    cv2.imshow("XX", img_trans)
+
+    tmp = img_trans.copy()
+
+    distance_of_markers_1 = 150
+    distance_of_markers_2 = 150
+
+    detected_obj = list()  # Storage destination of detection result
+    tr_x = lambda x: x * distance_of_markers_1 / 500  # X-axis image coordinates → real coordinates
+    tr_y = lambda y: y * distance_of_markers_2 / 500  # Y axis 〃
+    img_trans_marked = img_trans.copy()
+
+
+
+   # cv2.imshow("d", img_marked)  # display
+    cv2.waitKey(5000)
 
 
 def adding_objects():
@@ -240,7 +316,12 @@ def adding_objects():
 
     if usr_inp6 == "1":
         print("Taking the Image...\n")
-        cap = cv2.VideoCapture(0)  # video capture source camera (Here webcam of laptop)
+        cap = cv2.VideoCapture(0,apiPreference=cv2.CAP_ANY, params=[
+        cv2.CAP_PROP_FRAME_WIDTH, 1280,
+        cv2.CAP_PROP_FRAME_HEIGHT, 720])
+        focus = 0 # min: 0, max: 255, increment:5
+        cap.set(28, focus)
+        # video capture source camera (Here webcam of laptop)
         ret, frame = cap.read()  # return a single frame in variable `frame`
 
         cv2.imshow('object image', frame)
@@ -268,12 +349,39 @@ def adding_objects():
 
 def take_pic():
 
-    cap = cv2.VideoCapture(0) # video capture source camera (Here webcam of laptop)
+    cap = cv2.VideoCapture(0,apiPreference=cv2.CAP_ANY, params=[
+    cv2.CAP_PROP_FRAME_WIDTH, 1280,
+    cv2.CAP_PROP_FRAME_HEIGHT, 720])
+    focus = 0  # min: 0, max: 255, increment:5
+    cap.set(28, focus)
+    # video capture source camera
     ret,frame = cap.read() # return a single frame in variable `frame`
 
     cv2.imshow('img1', frame)
     cv2.waitKey(6)
-    
+
+
+    aruco = cv2.aruco
+    p_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
+    # cv2.imshow("Image check", img)
+    # cv2.waitKey(5)
+
+    corners, ids, rejectedImgPoints = aruco.detectMarkers(frame, p_dict)  # detection
+    n = len(ids)
+    print("numer of markers in image = ", n)
+    img_marked = aruco.drawDetectedMarkers(frame.copy(), corners, ids)
+    if len(ids) < 4:
+        aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)
+        parameters = aruco.DetectorParameters_create()
+        #
+        corners, ids, rejectedImgPoints = aruco.detectMarkers(
+            img_marked, aruco_dict, parameters=parameters)
+        cv2.imshow("w", img_marked)
+        cv2.waitKey(6)
+        print("Less then 4 markers in image")
+
+
+
     usr_inpiut2 = input("Is the image satisfactory? y/n \n")
 
 
@@ -283,6 +391,8 @@ def take_pic():
         cv2.imwrite('image_base.jpg', frame)
         cv2.destroyAllWindows()
         cap.release()
+
+
 
         adding_objects()
 
