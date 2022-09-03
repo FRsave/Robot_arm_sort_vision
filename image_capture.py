@@ -3,8 +3,12 @@ import numpy as np
 from PIL import Image, ImageChops
 import cv2.aruco as aruco
 import matplotlib as plt
+import re
+import math
 
 from objectDataSave import *
+
+loop_check = 0
 
 list_of = []
 
@@ -12,8 +16,8 @@ object_number = 1
 
 # workspace size
 
-workspace_x = 150
-workspace_y = 150
+global workspace_x
+global workspace_y
 
 # size of markers
 
@@ -25,9 +29,30 @@ aruco_size = 20
 calibrate_camera = 0
 
 # camera calibration values
-mtx = np.array([[803.50497215, 0., 320.44270463], [0., 801.88888833, 273.94703118], [0., 0., 1.]])
+#mtx = np.array([[803.50497215, 0., 320.44270463], [0., 801.88888833, 273.94703118], [0., 0., 1.]])
 
-dist = np.array([7.14866635e-02, -7.75521953e-01, 9.60569354e-03, 1.00233108e-03, 5.88020175e+00])
+#dist = np.array([7.14866635e-02, -7.75521953e-01, 9.60569354e-03, 1.00233108e-03, 5.88020175e+00])
+
+
+
+mtx = np.array(
+[[1.89129278e+03, 0.00000000e+00, 1.46899834e+03],
+ [0.00000000e+00, 1.86324300e+03, 8.26025303e+02],
+ [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+
+dist = np.array([-0.35883596,  0.16373543,  0.00161949,  0.00222944, -0.04379734])
+
+
+
+
+
+
+
+#mtx = np.array([[1.66193377e+03, 0.00000000e+00, 1.25207306e+03],[0.00000000e+00, 1.69806678e+03, 1.11202446e+03],[0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+
+#dist = np.array([-0.34737502,  0.18058007, -0.02705915,  0.00730897, -0.0581378 ])
+
+
 
 
 def init_new_json_file():
@@ -100,56 +125,43 @@ def specify_object():
 #   return obj_type
 
 
-def shape_class(c, x, y, w, h):
-    shape_estimation = cv2.approxPolyDP(c, 0.01 * cv2.arcLength(c, True), True)
+# def shape_class(c, x, y, w, h):
+#     shape_estimation = cv2.approxPolyDP(c, 0.01 * cv2.arcLength(c, True), True)
+#
+#     # circle = cv2.HoughCircles()
+#
+#     if len(shape_estimation) == 4:
+#         ratio = float(w) / h
+#         print(ratio)
+#
+#         # aspect ratio to determine when a rectangle is close to be a square
+#         if ratio >= 0.80 and ratio <= 1.40:
+#             print("square")
+#             obj_shape = str("square")
+#         else:
+#             print("rectangle")
+#             obj_shape = str("rectangle")
+#
+#     #
+#
+#     elif len(shape_estimation) > 8:
+#
+#         obj_shape = str("circle")
+#
+#     return obj_shape
 
-    # circle = cv2.HoughCircles()
-
-    if len(shape_estimation) == 4:
-        ratio = float(w) / h
-        print(ratio)
-
-        # aspect ratio to determine when a rectangle is close to be a square
-        if ratio >= 0.80 and ratio <= 1.40:
-            print("square")
-            obj_shape = str("square")
-        else:
-            print("rectangle")
-            obj_shape = str("rectangle")
-
-    #
-
-    elif len(shape_estimation) > 8:
-
-        obj_shape = str("circle")
-
-    return obj_shape
 
 
-# uses markers to estimate the pixel to real world ratio using marker size as basis
 
-def size_comparison(img, w, h):
-    global aruco_size
 
-    p_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
-    corners, _, _ = aruco.detectMarkers(img, p_dict)
+# turing position coordinates to line length for size approximation
+def size_comparison(x1,y1,x2,y2,x3,y3,x4,y4):
 
-    # getting perimeter size of first detected marker
-    perim_arcuro = cv2.arcLenght(corners[0], True)
+    # distnace between two lines
+    line1_l = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    line2_l = math.sqrt((x3 - x4) ** 2 + (y3 - y4) ** 2)
 
-    # size of pxl / real world size of marker
-    pixel_to_real_ratio = perim_arcuro / aruco_size
-
-    area = w * h
-
-    ratio = float(w) / h
-
-    if ratio >= 0.80 and ratio <= 1.20:
-        obj_shape = str("square")
-    else:
-        obj_shape = str("rectangle")
-
-    return obj_shape
+    return line1_l, line2_l
 
 
 # 3D to 2D coords transformation formula:
@@ -163,7 +175,7 @@ def correct_image(img):
     h, w = img.shape[:2]
     w1, h1 = 1 * w, 1 * h
 
-    print(h, w)
+    print(w, h)
 
     newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w1, h1))
     dst = cv2.undistort(img, mtx, dist, None, newcameramtx)  # crop the image x,y,w,h = roi dst = dst[y:y+h, x:x+w]
@@ -178,7 +190,7 @@ def correct_image(img):
 # return
 
 
-def _2D_3D_transf(img, valx, valy, c1, c2, c3, c4):
+def _2D_3D_transf(valx, valy, c1, c2, c3, c4):
     global workspace_x, workspace_y, p1_1, p1_2, p2_1, p2_2, p3_1, p3_2, p4_1, p4_2, arIds, arCorner
 
 
@@ -186,10 +198,21 @@ def _2D_3D_transf(img, valx, valy, c1, c2, c3, c4):
     ids = arIds
     print("corner count: ")
     print(len(ids))
+
+
+
+
     # stores centre of markers, upper left clock wise motion
     cent = np.empty((4, 2))
     for i, c in zip(ids.ravel(), corners):
         cent[i] = c[0].mean(axis=0)
+    #
+    #     print(cent[i])
+    # print("£££££££££££££££")
+    # print(cent[0:])
+    # print(cent[1])
+    # print(cent[2])
+    # print(cent[3])
 
 
 
@@ -225,17 +248,24 @@ def _2D_3D_transf(img, valx, valy, c1, c2, c3, c4):
     int(float(p4_2))
 
     #print(p1_1, p1_2)
+    workspace_x = int(workspace_x)
+    workspace_y = int(workspace_y)
 
-    # real world__________pixels
-    features_mm_to_pixels_dict = {(0, 0): (p1_1, p1_2),
+    print("values in:")
+    print(p4_1, p4_2)
+    print(p1_1,p1_2)
+
+    # real world______:_____pixels
+    features_mm_to_pixels_dict = {(0, 0): (p4_1, p4_2),
                                   (workspace_x, 0): (p3_1, p3_2),
                                   (workspace_x, workspace_y): (p2_1, p2_2),
-                                  (0, workspace_y): (p4_1, p4_2)}
+                                  (0, workspace_y): (p1_1, p1_2)}
 
-    print(features_mm_to_pixels_dict)
+   # print(features_mm_to_pixels_dict)
 
     A = np.zeros((2 * len(features_mm_to_pixels_dict), 6), dtype=float)
     b = np.zeros((2 * len(features_mm_to_pixels_dict), 1), dtype=float)
+
     index = 0
     for XY, xy in features_mm_to_pixels_dict.items():
         X = XY[0]
@@ -256,21 +286,84 @@ def _2D_3D_transf(img, valx, valy, c1, c2, c3, c4):
 
     pixels_to_mm_transformation_mtx = np.array([[x[0, 0], x[1, 0], x[2, 0]], [x[3, 0], x[4, 0], x[5, 0]], [0, 0, 1]])
 
-    for i in range(3):
-        c1, c2, c3, c4
+    print(c4)
+    print(type(c1))
+    print(type(c4))
 
-    print(c1, c2, c3, c4)
+    number1 = re.findall(r'\d+', c1)
+    c1_x =(number1[0])
+    c1_y =(number1[1])
+
+    number2 = re.findall(r'\d+', c2)
+    c2_x =(number1[0])
+    c2_y =(number1[1])
+
+    number3 = re.findall(r'\d+', c3)
+    c3_x =(number1[0])
+    c3_y =(number1[1])
+
+    number4 = re.findall(r'\d+', c4)
+    c4_x =(number1[0])
+    c4_y =(number1[1])
 
 
-    val = valx
-    val1 = valy
 
-    test_xy_1 = (val, val1, 1)
+    #
+    # c1_x,c1_y = c1.split(" ",1)
+    # c1_x = c1_x.replace("[", "")
+    # c1_y = c1_y.replace("]", "")
+    c1 = ((float(c1_x)),(float(c1_y)), 1)
+    #
+    # c2_x, c2_y = c2.split(" ", 1)
+    # c2_x = c2_x.replace("[", "")
+    # c2_y = c2_y.replace("]", "")
+    c2 = ((float(c2_x)), (float(c2_y)), 1)
+    #
+    # c3_x, c3_y = c3.split(" ", 1)
+    # c3_x = c3_x.replace("[", "")
+    # c3_y = c3_y.replace("]", "")
+    c3 = ((float(c3_x)), (float(c3_y)), 1)
+    #
+    # c4=c4.replace("  ", "")
+    # print(c4)
+    # c4_x, c4_y = c4.split(" ", 1)
+    # c4_x = c4_x.replace("[", "")
+    # c4_y = c4_y.replace("]", "")
+    # print("+++++++++++++++++++++++")
+    # print(type(c4_x))
+    # print(c4_x)
+    # print("+++++++++++++++++++++++")
+    #
+    c4 = ((float(c4_x)), (float(c4_y)), 1)
+
+
+
+
+    # print("============")
+    # print(c1)
+    # print("============")
+
+
+
+    valx = valx
+    valy = valy
+
+
+    test_xy_1 = (valx, valy, 1)
     test_XY_1 = pixels_to_mm_transformation_mtx @ test_xy_1
+
+    newC1 = pixels_to_mm_transformation_mtx @ c1
+    newC2 = pixels_to_mm_transformation_mtx @ c2
+    newC3 = pixels_to_mm_transformation_mtx @ c3
+    newC4 = pixels_to_mm_transformation_mtx @ c4
 
     new_valx = test_XY_1[0]
     new_valy = test_XY_1[1]
 
+    # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    # print(test_XY_1)
+    # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    # print(new_valy)
 
     #print(new_valx, new_valy)
 
@@ -279,8 +372,13 @@ def _2D_3D_transf(img, valx, valy, c1, c2, c3, c4):
     # cv2.imshow("w", img_marked)
     # cv2.waitKey(60000)
 
+    #print(newC1)
+    print("workspace size")
+    print(workspace_x, workspace_y)
+    print("real corner values")
+    print(newC1, newC2, newC3, newC4)
 
-    return new_valx, new_valy
+    return new_valx, new_valy , newC1, newC2, newC3,newC4
 
 
 #    mm_to_pixels_transformation_mtx = np.linalg.inv(pixels_to_mm_transformation_mtx)
@@ -315,8 +413,8 @@ def detect_object():
 
     diff = ImageChops.difference(img1, img2)
 
-    aruco_image_flatten(orginal_base)
-    aruco_image_flatten(orginal_objects)
+    # aruco_image_flatten(orginal_base)
+    # aruco_image_flatten(orginal_objects)
 
     if diff.getbbox():
         # diff.show()
@@ -332,7 +430,7 @@ def detect_object():
     higher = np.array([255, 255, 255])  # 186
 
     mask = cv2.inRange(image_gray, lower, higher)
-    mask = cv2.blur(mask, (10, 10))
+    mask = cv2.blur(mask, (4, 4))
     cv2.imshow("mask", mask)
 
     cont, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -426,13 +524,27 @@ def detect_object():
                 cv2.circle(img4, (int(x), int(y)), 5, (0, 0, 255), -1)
                 cv2.putText(img4, str((int(x), int(y))), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 0), 1)
 
-            # change image to 3 dimensional position prediction
-            realX, realY =_2D_3D_transf(img4, cX, cY, p1, p2, p3, p4)
+            print("11111111")
+            print(p1, p2)
+            print("The variable, lessons is of type:", type(p1))
 
-            object = Object(object_number, realX, realY, p1, p2, p3, p4, angle, w, h)
+            object = Object(object_number, cX, cY, p1, p2, p3, p4, angle, w, h)
             print("filesave...")
             # object.print_info()
             # object.save_to_json("objects.json")
+            # change image to 3 dimensional position prediction1
+            realX, realY, p1, p2, p3, p4 = _2D_3D_transf(cX, cY, p1, p2, p3, p4)
+
+            # p1 = str(p1)
+            #
+            p1 = np.array_str(p1, precision=2,suppress_small=True)
+            p2 = np.array_str(p2, precision=2,suppress_small=True)
+            p3 = np.array_str(p3, precision=2,suppress_small=True)
+            p4 = np.array_str(p4, precision=2,suppress_small=True)
+            #
+            print("Before save value:")
+            print(p1, p2, p3, p4)
+
             object.add_to_file("objects.json", object_number, realX, realY, p1, p2, p3, p4, angle, w, h)
             print("===================================================")
 
@@ -441,6 +553,7 @@ def detect_object():
 
     cv2.imwrite('results.jpg', img4)
     cv2.imshow("Final Image", img4)
+    #cv2.imshow('image_objects.jpg')
 
     if cv2.waitKey(1) & 0XFF == ord('q'):
         cv2.destroyAllWindows()
@@ -470,9 +583,6 @@ def aruco_image_flatten(image_name):
     # cv2.waitKey(5)
 
     corners, ids, rejectedImgPoints = aruco.detectMarkers(img, p_dict)  # detection
-
-    arCorner = corners
-    arIds = ids
 
     if ids is not None:
         n = len(ids)
@@ -524,28 +634,24 @@ def aruco_image_flatten(image_name):
 
 
 def adding_objects():
-    global workspace_x, workspace_y, calibrate_camera
 
-    print("Workspace length and width are required in relation to camera POV")
-    usr_inpWSx = input("Enter width(mm)  X (horizontal distance from the camera between centres of two markers)\n")
-    usr_inpWSy = input("Enter length(mm) Y (Vertical distance from the camera between centres of two markers)\n")
-
-    workspace_x = int(usr_inpWSx)
-    workspace_y = int(usr_inpWSy)
-
-    print("Width = " + str(workspace_x) + "mm")
-    print("Length= " + str(workspace_y) + "mm")
-
+    global workspace_x, workspace_y, arCorner ,arIds ,calibrate_camera
 
 
 
     usr_inp6 = input("Add item to the workspace! \n Enter 1 when ready...\n (2 to exit)\n")
 
+
     if usr_inp6 == "1":
+
+
+
         print("Taking the Image...\n")
         cap = cv2.VideoCapture(0, apiPreference=cv2.CAP_ANY, params=[
             cv2.CAP_PROP_FRAME_WIDTH, 1280,
             cv2.CAP_PROP_FRAME_HEIGHT, 720])
+
+
 
         focus = 0  # min: 0, max: 255, increment:5
         cap.set(28, focus)
@@ -553,10 +659,33 @@ def adding_objects():
         ret, frame = cap.read()  # return a single frame in variable `frame`
 
         # remove camera distortion
-        if calibrate_camera == 1:
-             frame = correct_image(frame)
-        elif calibrate_camera == 0:
-            return
+        if int(calibrate_camera) == 1:
+            print("correcting image")
+            frame = correct_image(frame)
+
+        aruco = cv2.aruco
+        p_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
+        # cv2.imshow("Image check", img)1
+        # cv2.waitKey(5)
+
+        corners, ids, rejectedImgPoints = aruco.detectMarkers(frame.copy(), p_dict)  # detection
+
+
+        arCorner = corners
+        arIds = ids
+        if ids is not None:
+            n = len(ids)
+            print("numer of markers in image = ", n)
+            img_marked = aruco.drawDetectedMarkers(frame.copy(), corners, ids)
+            if len(ids) < 4:
+                aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)
+                parameters = aruco.DetectorParameters_create()
+                #
+                corners, ids, rejectedImgPoints = aruco.detectMarkers(
+                    img_marked, aruco_dict, parameters=parameters)
+                cv2.imshow("w", img_marked)
+                cv2.waitKey(10)
+                print("Less then 4 markers in image")
 
         cv2.imshow('object image', frame)
         cv2.waitKey(6)
@@ -581,26 +710,25 @@ def adding_objects():
 
 def take_pic():
 
-    global calibrate_camera
+    global calibrate_camera, workspace_x, workspace_y
 
 
 
-    cap = cv2.VideoCapture(0, apiPreference=cv2.CAP_ANY, params=[
-        cv2.CAP_PROP_FRAME_WIDTH, 1280,
-        cv2.CAP_PROP_FRAME_HEIGHT, 720])
+    cap = cv2.VideoCapture(0, apiPreference=cv2.CAP_ANY, params=[cv2.CAP_PROP_FRAME_WIDTH, 1280,cv2.CAP_PROP_FRAME_HEIGHT, 720])#
     focus = 0  # min: 0, max: 255, increment:5
     cap.set(28, focus)
 
     # video capture source camera
     ret, frame = cap.read()
 
-
     # remove camera distortion
 
-    if calibrate_camera == 1:
+    print(calibrate_camera)
+
+    if int(calibrate_camera) == 1:
+        print("correcting image")
         frame = correct_image(frame)
-    elif calibrate_camera == 0:
-        return
+
 
     cv2.imshow('img1', frame)
     cv2.waitKey(6)
@@ -638,6 +766,17 @@ def take_pic():
         cap.release()
 
         print("Done...")
+
+        print("Workspace length and width are required in relation to camera POV")
+        usr_inpWSy = input("Enter width(mm)  X (horizontal distance from the camera between centres of two markers"
+                           "(longest distance)\n")
+        usr_inpWSx = input("Enter length(mm) Y (Vertical distance from the camera between centres of two markers)\n")
+
+        workspace_x = int(usr_inpWSx)
+        workspace_y = int(usr_inpWSy)
+
+        print("Width = " + str(workspace_x) + "mm")
+        print("Length= " + str(workspace_y) + "mm")
 
         adding_objects()
 

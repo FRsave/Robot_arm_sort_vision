@@ -22,7 +22,7 @@ objp[0, :, :2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2)
 prev_img_shape = None
 
 # Extracting path of individual image stored in a given directory
-images = glob.glob('./images/*.jpg')
+images = glob.glob('./images 2k/*.jpg')
 for fname in images:
     img = cv2.imread(fname)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -70,7 +70,7 @@ print(rvecs)
 print("tvecs : \n")
 print(tvecs)
 
-img = cv2.imread('./images/image4.jpg')
+img = cv2.imread('./images 2k/WIN_20220902_22_24_45_Pro.jpg')
 
 h,  w = img.shape[:2]
 
