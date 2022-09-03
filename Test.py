@@ -1,25 +1,36 @@
 import numpy as np
 import cv2
+import logging
+import cv2
+import numpy as np
+import copy
+
 # #https://www.geeksforgeeks.org/displaying-the-coordinates-of-the-points-clicked-on-the-image-using-python-opencv/
 #
+#
+# import matplotlib.pyplot as plt
+# im = plt.imread("ch.png")
+# implot = plt.imshow(im)
+#
+# # put a blue dot at (10, 20)
+# #plt.scatter([192], [801])
+# #plt.scatter([937], [652])
+# #plt.scatter([798], [62])
+# plt.scatter([101], [197])
+#
+# plt.show()
+#
+largeTestTube = [120, 50]
+smallTestTube = [120, 30]
+petriDish = [100, 100]
 
-import matplotlib.pyplot as plt
-im = plt.imread("ch.png")
-implot = plt.imshow(im)
+largeTestTube[0]
+largeTestTube[1]
 
-# put a blue dot at (10, 20)
-#plt.scatter([192], [801])
-#plt.scatter([937], [652])
-#plt.scatter([798], [62])
-plt.scatter([101], [197])
-
-plt.show()
+answer = largeTestTube[0] - 20
+print(answer)
 
 
-# import logging
-# import cv2
-# import numpy as np
-# import copy
 #
 # logging.basicConfig(level=logging.DEBUG, format='%(asctime)-15s %(levelname)s \t%(message)s')
 #

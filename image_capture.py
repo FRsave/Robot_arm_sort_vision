@@ -149,17 +149,94 @@ def specify_object():
 #         obj_shape = str("circle")
 #
 #     return obj_shape
+def object_by_size(line1_l, line2_l):
+
+    # Large test tube = 120mm and 50mm
+    # small test tube = 120mm and 30mm
+    # petri dish      = 100mm and 100mm
+
+    lTestTube = [120,50]
+    sTestTube = [120,30]
+    petriDish  = [100, 100]
+    penlid = [80, 30]
+
+    #range of values between
+    r = 20
+
+
+    print(line1_l, line2_l)
+
+    line1_l = int(line1_l)
+    line2_l = int(line2_l)
+
+    print(penlid[0], penlid[1])
+
+    # data change here to decreased if statement length
+    penL1 = int(penlid[0])
+    penL2 = int(penlid[1])
+
+    stube1 = int(sTestTube[0])
+    stube2 = int(sTestTube[1])
+
+    ltube1 = int(lTestTube[0])
+    ltube2 = int(lTestTube[1])
+
+    pdish1 = int(petriDish[0])
+    pdish2 = int(petriDish[1])
+
+
+
+    if (line1_l in range(penL1 - r, penL1 + r) and line2_l in range(penL2 - r,penL2 + r)) or\
+            (line1_l in range(penL2 - r, penL2 + r) and line2_l in range(penL1 - r, penL1 +r)):
+        print("object is a pen lid")
+        object_type = "pen lid"
+
+
+    elif (line1_l == range(stube1 -r,stube1 +r)
+        and line2_l == range(stube2-r,stube2+r)) \
+            or (line1_l == range(stube2-r,stube2+r)
+                and line2_l == range(stube1 -r,stube1 +r)):
+
+        print("object is a small test tube")
+        object_type = "small test tube"
+
+    elif (line1_l == range(ltube1-r,ltube1+r)
+        and line2_l == range(ltube2-r,ltube2+r)) \
+            or (line1_l == range(ltube2-r,ltube2+r)
+                and line2_l == range(ltube1-r,ltube1+r)):
+
+        print("object is a large test tube")
+        object_type = "large test tube"
+
+    elif (line1_l == range(pdish1 - r, pdish1 + r)
+          and line2_l == range(pdish2 - r, pdish2 + r)) \
+            or (line1_l == range(pdish2 - r, pdish2 + r)
+                and line2_l == range(pdish1 - r, pdish1 + r)):
+
+        print("object is a petri dish")
+        object_type = "petri dish "
+
+    else:
+        print("unknown object")
+        object_type = "unknown"
+
+
+
+    return object_type
+
 
 
 
 
 
 # turing position coordinates to line length for size approximation
-def size_comparison(x1,y1,x2,y2,x3,y3,x4,y4):
+def size_comparison(p1, p2, p3, p4):
 
     # distnace between two lines
-    line1_l = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-    line2_l = math.sqrt((x3 - x4) ** 2 + (y3 - y4) ** 2)
+    line1_l = math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
+    line2_l = math.sqrt((p2[0] - p3[0]) ** 2 + (p3[1] - p2[1]) ** 2)
+
+    #print("line1 is: " + str(line1_l) +" line2 is:" + str(line2_l))
 
     return line1_l, line2_l
 
@@ -175,12 +252,12 @@ def correct_image(img):
     h, w = img.shape[:2]
     w1, h1 = 1 * w, 1 * h
 
-    print(w, h)
+    #print(w, h)
 
     newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w1, h1))
     dst = cv2.undistort(img, mtx, dist, None, newcameramtx)  # crop the image x,y,w,h = roi dst = dst[y:y+h, x:x+w]
     x, y, w, h = roi
-    print(w, h)
+   # print(w, h)
 
     dst = dst[y:y + h, x:x + w]
 
@@ -236,7 +313,7 @@ def _2D_3D_transf(valx, valy, c1, c2, c3, c4):
         elif i == 3:
             p4_1, p4_2 = x, y
 
-    print(p1_1, p1_2, p2_1, p2_2)
+    #print(p1_1, p1_2, p2_1, p2_2)
 
     int(float(p1_1))
     int(float(p1_2))
@@ -251,9 +328,9 @@ def _2D_3D_transf(valx, valy, c1, c2, c3, c4):
     workspace_x = int(workspace_x)
     workspace_y = int(workspace_y)
 
-    print("values in:")
-    print(p4_1, p4_2)
-    print(p1_1,p1_2)
+    # print("values in:")
+    # print(p4_1, p4_2)
+    # print(p1_1,p1_2)
 
     # real world______:_____pixels
     features_mm_to_pixels_dict = {(0, 0): (p4_1, p4_2),
@@ -286,57 +363,35 @@ def _2D_3D_transf(valx, valy, c1, c2, c3, c4):
 
     pixels_to_mm_transformation_mtx = np.array([[x[0, 0], x[1, 0], x[2, 0]], [x[3, 0], x[4, 0], x[5, 0]], [0, 0, 1]])
 
-    print(c4)
-    print(type(c1))
-    print(type(c4))
+    # print(c4)
+    # print(type(c1))
+    # print(type(c4))
 
     number1 = re.findall(r'\d+', c1)
     c1_x =(number1[0])
     c1_y =(number1[1])
 
     number2 = re.findall(r'\d+', c2)
-    c2_x =(number1[0])
-    c2_y =(number1[1])
+    c2_x =(number2[0])
+    c2_y =(number2[1])
 
     number3 = re.findall(r'\d+', c3)
-    c3_x =(number1[0])
-    c3_y =(number1[1])
+    c3_x =(number3[0])
+    c3_y =(number3[1])
 
     number4 = re.findall(r'\d+', c4)
-    c4_x =(number1[0])
-    c4_y =(number1[1])
+    c4_x =(number4[0])
+    c4_y =(number4[1])
 
 
 
-    #
-    # c1_x,c1_y = c1.split(" ",1)
-    # c1_x = c1_x.replace("[", "")
-    # c1_y = c1_y.replace("]", "")
     c1 = ((float(c1_x)),(float(c1_y)), 1)
-    #
-    # c2_x, c2_y = c2.split(" ", 1)
-    # c2_x = c2_x.replace("[", "")
-    # c2_y = c2_y.replace("]", "")
+
     c2 = ((float(c2_x)), (float(c2_y)), 1)
-    #
-    # c3_x, c3_y = c3.split(" ", 1)
-    # c3_x = c3_x.replace("[", "")
-    # c3_y = c3_y.replace("]", "")
+
     c3 = ((float(c3_x)), (float(c3_y)), 1)
-    #
-    # c4=c4.replace("  ", "")
-    # print(c4)
-    # c4_x, c4_y = c4.split(" ", 1)
-    # c4_x = c4_x.replace("[", "")
-    # c4_y = c4_y.replace("]", "")
-    # print("+++++++++++++++++++++++")
-    # print(type(c4_x))
-    # print(c4_x)
-    # print("+++++++++++++++++++++++")
-    #
+
     c4 = ((float(c4_x)), (float(c4_y)), 1)
-
-
 
 
     # print("============")
@@ -348,6 +403,7 @@ def _2D_3D_transf(valx, valy, c1, c2, c3, c4):
     valx = valx
     valy = valy
 
+    #print(c1,c2,c3,c4)
 
     test_xy_1 = (valx, valy, 1)
     test_XY_1 = pixels_to_mm_transformation_mtx @ test_xy_1
@@ -373,10 +429,10 @@ def _2D_3D_transf(valx, valy, c1, c2, c3, c4):
     # cv2.waitKey(60000)
 
     #print(newC1)
-    print("workspace size")
-    print(workspace_x, workspace_y)
-    print("real corner values")
-    print(newC1, newC2, newC3, newC4)
+    # print("workspace size")
+    # print(workspace_x, workspace_y)
+    # print("real corner values")
+    # print(newC1, newC2, newC3, newC4)
 
     return new_valx, new_valy , newC1, newC2, newC3,newC4
 
@@ -487,12 +543,12 @@ def detect_object():
 
             angle = rect[-1]
 
-            print(h)
-            print(w)
+            # print(h)
+            # print(w)
 
             # h  =  rect[-2]
 
-            print(h)
+            #print(h)
 
             if angle < -45:
                 angle = -(90 + angle)
@@ -500,9 +556,9 @@ def detect_object():
             else:
                 angle = -angle
 
-            print(angle)
+            #print(angle)
 
-            print("''''''''''''")
+            #print("''''''''''''")
 
             p1 = box[0]
             p1 = str(p1)
@@ -524,8 +580,8 @@ def detect_object():
                 cv2.circle(img4, (int(x), int(y)), 5, (0, 0, 255), -1)
                 cv2.putText(img4, str((int(x), int(y))), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 0), 1)
 
-            print("11111111")
-            print(p1, p2)
+            #print("11111111")
+            #print(p1, p2)
             print("The variable, lessons is of type:", type(p1))
 
             object = Object(object_number, cX, cY, p1, p2, p3, p4, angle, w, h)
@@ -535,6 +591,9 @@ def detect_object():
             # change image to 3 dimensional position prediction1
             realX, realY, p1, p2, p3, p4 = _2D_3D_transf(cX, cY, p1, p2, p3, p4)
 
+            line1, line2 = size_comparison(p1, p2, p3, p4)
+
+            object_type = object_by_size(line1,line2)
             # p1 = str(p1)
             #
             p1 = np.array_str(p1, precision=2,suppress_small=True)
