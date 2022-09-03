@@ -4,7 +4,7 @@ filename = "objects.json"
 
 class Object:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def __init__(self, number, centreX, centreY,point1, point2, point3, point4, ang,w,h):
+    def __init__(self, number, centreX, centreY,point1, point2, point3, point4, ang, w, h, object_type ):
         self.number = number
         self.centreX = centreX
         self.centreY = centreY
@@ -15,17 +15,20 @@ class Object:
         self.angle = ang
         self.width = w
         self.height = h
+        self.type = object_type
+
+
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     def print_info(self):
-     print(self.number, self.centreX, self.centreY, self.point1, self.point2, self.point3, self.point4, self.angle, self.width,self.height)
+     print(self.number, self.centreX, self.centreY, self.point1, self.point2, self.point3, self.point4, self.angle, self.width,self.height, self.type)
 
     def save_to_json(self, filename):
         object_dict = ({"objects" :[ {'object num': self.number, 'centre X': self.centreX,'centre Y': self.centreY,'p1': self.point1,
-                       'p2':self.point2,'p3': self.point3,'p4':self.point4, 'angle': self.angle, 'width': self.width, 'height':self.height}]})
+                       'p2':self.point2,'p3': self.point3,'p4':self.point4, 'angle': self.angle, 'width': self.width, 'height':self.height, 'object type': self.type}]})
         with open(filename, 'w') as f:
             f.write(json.dumps(object_dict, indent= 1,separators=(',',': ')))
 
@@ -44,15 +47,16 @@ class Object:
         self.angle = data['angle']
         self.width = data['width']
         self.height = data['height']
+        self.type = data['object type']
 
 
-    def add_to_file(self, filename, number, centreX, centreY,point1, point2, point3, point4, angle,w,h):
+    def add_to_file(self, filename, number, centreX, centreY,point1, point2, point3, point4, angle,w,h, object_type):
 
         with open(filename) as f:
             dic = json.load(f)
 
         x = {'object num': number, "centre X": centreX, "centre Y": centreY, 'p1': point1, 'p2': point2, 'p3': point3,
-             'p4': point4, 'angle': angle, 'width': w, 'height':h}
+             'p4': point4, 'angle': angle, 'width': w, 'height':h, 'object type': object_type}
 
         dic["objects"].append(x)
 

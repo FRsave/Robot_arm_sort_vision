@@ -56,9 +56,11 @@ dist = np.array([-0.35883596,  0.16373543,  0.00161949,  0.00222944, -0.04379734
 
 
 def init_new_json_file():
-    object_number = cX = cY = p1 = p2 = p3 = p4 = angle = w = h = "-"
-    object = Object(object_number, cX, cY, p1, p2, p3, p4, angle, w, h)
+    global object_number
+    object_number = cX = cY = p1 = p2 = p3 = p4 = angle = w = h = object_type = "-"
+    object = Object(object_number, cX, cY, p1, p2, p3, p4, angle, w, h, object_type )
     object.save_to_json(filename)
+    object_number = 1
 
 
 # function to seperte x,y of objects from objects
@@ -155,21 +157,18 @@ def object_by_size(line1_l, line2_l):
     # small test tube = 120mm and 30mm
     # petri dish      = 100mm and 100mm
 
-    lTestTube = [120,50]
+    lTestTube = [135,50]
     sTestTube = [120,30]
     petriDish  = [100, 100]
     penlid = [80, 30]
 
     #range of values between
-    r = 20
+    r = 25
+    #r_ltube = 35
 
-
-    print(line1_l, line2_l)
 
     line1_l = int(line1_l)
     line2_l = int(line2_l)
-
-    print(penlid[0], penlid[1])
 
     # data change here to decreased if statement length
     penL1 = int(penlid[0])
@@ -192,26 +191,26 @@ def object_by_size(line1_l, line2_l):
         object_type = "pen lid"
 
 
-    elif (line1_l == range(stube1 -r,stube1 +r)
-        and line2_l == range(stube2-r,stube2+r)) \
-            or (line1_l == range(stube2-r,stube2+r)
-                and line2_l == range(stube1 -r,stube1 +r)):
+    elif (line1_l in range(stube1 -r,stube1 +r)
+        and line2_l in range(stube2-r,stube2+r)) \
+            or (line1_l in range(stube2-r,stube2+r)
+                and line2_l in range(stube1 -r,stube1 +r)):
 
         print("object is a small test tube")
         object_type = "small test tube"
 
-    elif (line1_l == range(ltube1-r,ltube1+r)
-        and line2_l == range(ltube2-r,ltube2+r)) \
-            or (line1_l == range(ltube2-r,ltube2+r)
-                and line2_l == range(ltube1-r,ltube1+r)):
+    elif (line1_l in range(ltube1 -r,ltube1+r)
+        and line2_l in range(ltube2 -r,ltube2+r)) \
+            or (line1_l in range(ltube2 -r,ltube2+r)
+                and line2_l in range(ltube1 -r,ltube1+r)):
 
         print("object is a large test tube")
         object_type = "large test tube"
 
-    elif (line1_l == range(pdish1 - r, pdish1 + r)
-          and line2_l == range(pdish2 - r, pdish2 + r)) \
-            or (line1_l == range(pdish2 - r, pdish2 + r)
-                and line2_l == range(pdish1 - r, pdish1 + r)):
+    elif (line1_l in range(pdish1 - r, pdish1 + r)
+          and line2_l in range(pdish2 - r, pdish2 + r)) \
+            or (line1_l in range(pdish2 - r, pdish2 + r)
+                and line2_l in range(pdish1 - r, pdish1 + r)):
 
         print("object is a petri dish")
         object_type = "petri dish "
@@ -230,13 +229,13 @@ def object_by_size(line1_l, line2_l):
 
 
 # turing position coordinates to line length for size approximation
-def size_comparison(p1, p2, p3, p4):
+def size_comparison(p1, p2, p3):
 
     # distnace between two lines
     line1_l = math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
     line2_l = math.sqrt((p2[0] - p3[0]) ** 2 + (p3[1] - p2[1]) ** 2)
 
-    #print("line1 is: " + str(line1_l) +" line2 is:" + str(line2_l))
+    print("line1 is: " + str(line1_l) +" line2 is:" + str(line2_l))
 
     return line1_l, line2_l
 
@@ -273,25 +272,12 @@ def _2D_3D_transf(valx, valy, c1, c2, c3, c4):
 
     corners = arCorner
     ids = arIds
-    print("corner count: ")
-    print(len(ids))
-
-
-
+    print("marker count: " + str(len(ids)))
 
     # stores centre of markers, upper left clock wise motion
     cent = np.empty((4, 2))
     for i, c in zip(ids.ravel(), corners):
         cent[i] = c[0].mean(axis=0)
-    #
-    #     print(cent[i])
-    # print("£££££££££££££££")
-    # print(cent[0:])
-    # print(cent[1])
-    # print(cent[2])
-    # print(cent[3])
-
-
 
     n = ids
 
@@ -441,11 +427,10 @@ def _2D_3D_transf(valx, valy, c1, c2, c3, c4):
 
 
 def try_again():
-    usr_inp = int(
-        input("Would you like to try again or use this data?\n Press 1 to try again from start \n Press 2 to re-do "
+    usr_inp = int(input("Would you like to try again or use this data?\n Press 1 to try again from start \n Press 2 to re-do "
               "from object addtion \n Press 3 to exit\n"))
 
-    jsonReadTest()
+    #jsonReadTest()
 
     if usr_inp == 1:
         image_intro()
@@ -512,7 +497,6 @@ def detect_object():
         #  print("cX", cX)
 
         x, y, h, w = cv2.boundingRect(c)
-        print(w * h)
 
         # altert values to specify size -------------------£££££££££££££££££££££££££££££££££££££££££
 
@@ -582,29 +566,28 @@ def detect_object():
 
             #print("11111111")
             #print(p1, p2)
-            print("The variable, lessons is of type:", type(p1))
+            #print("The variable, lessons is of type:", type(p1))
 
-            object = Object(object_number, cX, cY, p1, p2, p3, p4, angle, w, h)
+            realX, realY, p1, p2, p3, p4 = _2D_3D_transf(cX, cY, p1, p2, p3, p4)
+
+            line1, line2 = size_comparison(p1, p2, p3)
+
+            object_type = object_by_size(line1,line2)
+
+
+            object = Object(object_number, cX, cY, p1, p2, p3, p4, angle, w, h, object_type)
             print("filesave...")
             # object.print_info()
             # object.save_to_json("objects.json")
             # change image to 3 dimensional position prediction1
-            realX, realY, p1, p2, p3, p4 = _2D_3D_transf(cX, cY, p1, p2, p3, p4)
 
-            line1, line2 = size_comparison(p1, p2, p3, p4)
-
-            object_type = object_by_size(line1,line2)
-            # p1 = str(p1)
-            #
             p1 = np.array_str(p1, precision=2,suppress_small=True)
             p2 = np.array_str(p2, precision=2,suppress_small=True)
             p3 = np.array_str(p3, precision=2,suppress_small=True)
             p4 = np.array_str(p4, precision=2,suppress_small=True)
-            #
-            print("Before save value:")
-            print(p1, p2, p3, p4)
 
-            object.add_to_file("objects.json", object_number, realX, realY, p1, p2, p3, p4, angle, w, h)
+
+            object.add_to_file("objects.json", object_number, realX, realY, p1, p2, p3, p4, angle, w, h, object_type)
             print("===================================================")
 
             # object counter for the session (starts at 1)
