@@ -1,3 +1,7 @@
+# Code by: Filip T. Rzeczkowski
+# Copyright 2022, Filip T. Rzeczkowski, All rights reserved. ©
+
+
 import cv2
 import numpy as np
 from PIL import Image, ImageChops
@@ -23,7 +27,6 @@ global workspace_y
 
 aruco_size = 20
 
-
 # camera calibration flag
 
 calibrate_camera = 0
@@ -34,17 +37,12 @@ calibrate_camera = 0
 #dist = np.array([7.14866635e-02, -7.75521953e-01, 9.60569354e-03, 1.00233108e-03, 5.88020175e+00])
 
 
-
 mtx = np.array(
 [[1.89129278e+03, 0.00000000e+00, 1.46899834e+03],
  [0.00000000e+00, 1.86324300e+03, 8.26025303e+02],
  [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
 
 dist = np.array([-0.35883596,  0.16373543,  0.00161949,  0.00222944, -0.04379734])
-
-
-
-
 
 
 
@@ -118,39 +116,7 @@ def specify_object():
     print(list[usr_inp])
 
 
-# def classify_by_size(w,h):
-#   global test_tube_large, test_tube_small, petri_dish
 
-#  if
-
-
-#   return obj_type
-
-
-# def shape_class(c, x, y, w, h):
-#     shape_estimation = cv2.approxPolyDP(c, 0.01 * cv2.arcLength(c, True), True)
-#
-#     # circle = cv2.HoughCircles()
-#
-#     if len(shape_estimation) == 4:
-#         ratio = float(w) / h
-#         print(ratio)
-#
-#         # aspect ratio to determine when a rectangle is close to be a square
-#         if ratio >= 0.80 and ratio <= 1.40:
-#             print("square")
-#             obj_shape = str("square")
-#         else:
-#             print("rectangle")
-#             obj_shape = str("rectangle")
-#
-#     #
-#
-#     elif len(shape_estimation) > 8:
-#
-#         obj_shape = str("circle")
-#
-#     return obj_shape
 def object_by_size(line1_l, line2_l):
 
     # Large test tube = 120mm and 50mm
