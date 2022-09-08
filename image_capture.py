@@ -9,6 +9,7 @@ import cv2.aruco as aruco
 import matplotlib as plt
 import re
 import math
+import os
 
 from objectDataSave import *
 
@@ -191,9 +192,6 @@ def object_by_size(line1_l, line2_l):
 
 
 
-
-
-
 # turing position coordinates to line length for size approximation
 def size_comparison(p1, p2, p3):
 
@@ -205,10 +203,6 @@ def size_comparison(p1, p2, p3):
 
     return line1_l, line2_l
 
-
-# 3D to 2D coords transformation formula:
-# https://github.com/sebastiengilbert73/tutorial_homography/blob/main/compute_homography.py
-# https://towardsdatascience.com/coordinates-of-a-flat-scene-b37487df63ca
 
 
 def correct_image(img):
@@ -229,7 +223,10 @@ def correct_image(img):
     return dst
 
 
-# return
+# 3D to 2D coords transformation formula:
+# https://github.com/sebastiengilbert73/tutorial_homography/blob/main/compute_homography.py
+# https://towardsdatascience.com/coordinates-of-a-flat-scene-b37487df63ca
+# main formula is labeled as so below
 
 
 def _2D_3D_transf(valx, valy, c1, c2, c3, c4):
@@ -284,13 +281,16 @@ def _2D_3D_transf(valx, valy, c1, c2, c3, c4):
     # print(p4_1, p4_2)
     # print(p1_1,p1_2)
 
+
+    # matrix adapted to use image elements and real measurements alike
     # real world______:_____pixels
     features_mm_to_pixels_dict = {(0, 0): (p4_1, p4_2),
                                   (workspace_x, 0): (p3_1, p3_2),
                                   (workspace_x, workspace_y): (p2_1, p2_2),
                                   (0, workspace_y): (p1_1, p1_2)}
 
-   # print(features_mm_to_pixels_dict)
+    # code bellow is a formula under fair use act
+    #==================================================
 
     A = np.zeros((2 * len(features_mm_to_pixels_dict), 6), dtype=float)
     b = np.zeros((2 * len(features_mm_to_pixels_dict), 1), dtype=float)
@@ -315,9 +315,8 @@ def _2D_3D_transf(valx, valy, c1, c2, c3, c4):
 
     pixels_to_mm_transformation_mtx = np.array([[x[0, 0], x[1, 0], x[2, 0]], [x[3, 0], x[4, 0], x[5, 0]], [0, 0, 1]])
 
-    # print(c4)
-    # print(type(c1))
-    # print(type(c4))
+    # ==================================================
+
 
     number1 = re.findall(r'\d+', c1)
     c1_x =(number1[0])
@@ -336,7 +335,6 @@ def _2D_3D_transf(valx, valy, c1, c2, c3, c4):
     c4_y =(number4[1])
 
 
-
     c1 = ((float(c1_x)),(float(c1_y)), 1)
 
     c2 = ((float(c2_x)), (float(c2_y)), 1)
@@ -346,16 +344,8 @@ def _2D_3D_transf(valx, valy, c1, c2, c3, c4):
     c4 = ((float(c4_x)), (float(c4_y)), 1)
 
 
-    # print("============")
-    # print(c1)
-    # print("============")
-
-
-
     valx = valx
     valy = valy
-
-    #print(c1,c2,c3,c4)
 
     test_xy_1 = (valx, valy, 1)
     test_XY_1 = pixels_to_mm_transformation_mtx @ test_xy_1
@@ -368,28 +358,9 @@ def _2D_3D_transf(valx, valy, c1, c2, c3, c4):
     new_valx = test_XY_1[0]
     new_valy = test_XY_1[1]
 
-    # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    # print(test_XY_1)
-    # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    # print(new_valy)
 
-    #print(new_valx, new_valy)
+    return new_valx, new_valy , newC1, newC2, newC3, newC4
 
-    # img_marked = aruco.drawDetectedMarkers(img, corners, ids)
-    # img_marked = cv2.circle(img_marked, (val, val1), 5, (255, 125, 255), -1)
-    # cv2.imshow("w", img_marked)
-    # cv2.waitKey(60000)
-
-    #print(newC1)
-    # print("workspace size")
-    # print(workspace_x, workspace_y)
-    # print("real corner values")
-    # print(newC1, newC2, newC3, newC4)
-
-    return new_valx, new_valy , newC1, newC2, newC3,newC4
-
-
-#    mm_to_pixels_transformation_mtx = np.linalg.inv(pixels_to_mm_transformation_mtx)
 
 
 def try_again():
@@ -493,22 +464,13 @@ def detect_object():
 
             angle = rect[-1]
 
-            # print(h)
-            # print(w)
 
-            # h  =  rect[-2]
-
-            #print(h)
 
             if angle < -45:
                 angle = -(90 + angle)
 
             else:
                 angle = -angle
-
-            #print(angle)
-
-            #print("''''''''''''")
 
             p1 = box[0]
             p1 = str(p1)
@@ -529,6 +491,7 @@ def detect_object():
             for (x, y) in box:
                 cv2.circle(img4, (int(x), int(y)), 5, (0, 0, 255), -1)
                 cv2.putText(img4, str((int(x), int(y))), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 0), 1)
+
 
             #print("11111111")
             #print(p1, p2)
@@ -559,6 +522,15 @@ def detect_object():
             # object counter for the session (starts at 1)
             object_number = object_number + 1
 
+    # path = './Object_images_selected '
+    # # function for expandability with an SVM
+    # for c in enumerate(cont):
+    #     x, y, w, h = cv2.boundingRect(c)
+    #     ROI = img4[y:y + h, x:x + w]
+    #     cv2.imwrite(os.path.join(path,'object{}.png'.format(object_number), ROI))
+    #     cv2.waitKey(0)
+    #     cv2.waitKey(0)
+
     cv2.imwrite('results.jpg', img4)
     cv2.imshow("Final Image", img4)
     #cv2.imshow('image_objects.jpg')
@@ -571,7 +543,7 @@ def detect_object():
 
 # ArUco marker code inspired from:
 # https://www.linuxtut.com/en/c6e468da7007734c897f/
-
+# used for testing purposes
 
 def aruco_image_flatten(image_name):
     global workspace_x, workspace_y, arCorner, arIds
@@ -644,7 +616,6 @@ def aruco_image_flatten(image_name):
 def adding_objects():
 
     global workspace_x, workspace_y, arCorner ,arIds ,calibrate_camera
-
 
 
     usr_inp6 = input("Add item to the workspace! \n Enter 1 when ready...\n (2 to exit)\n")
@@ -792,7 +763,6 @@ def take_pic():
 
 
 
-
     elif usr_inpiut2 == "n":
 
         usr_inpiut3 = input("Try again? (y/n) \n ")
@@ -837,37 +807,5 @@ def image_intro():
 
 
 if __name__ == '__main__':
-   # img = cv2.imread("test_corners.png")
-   # wa, w2 = _2D_3D_transf(img, 240, 460)
-   #  print(wa)
-   #  print(w2)
-    # jsonReadTest2()
     image_intro()
 
-
-# def take_pic():
-#     print("hi")
-#     cap = cv2.VideoCapture(0) # video capture source camera (Here webcam of laptop)
-#     ret,frame = cap.read() # return a single frame in variable `frame`
-#
-#     while(True):
-#         cv2.imshow('img1',frame)
-#         cv2.waitKey(1)
-#         cv2.imwrite('image-base.png',frame)
-#         cv2.destroyAllWindows()
-#         break
-#
-#     cap.release()
-#
-#     view_image = cv2.imread('image-base.png',1)
-#
-#     cv2.imshow("", view_image)
-#
-#     usr_inpiut2 = input("Is the image satisfactory?")
-#
-#     if usr_inpiut2 == "y":
-#         print("works")
-#     elif usr_inpiut2 == "n":
-#         print("try again?")
-#     else:
-#         print("invalid input")

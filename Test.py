@@ -1,9 +1,220 @@
+import json
+
 import numpy as np
 import cv2
 import logging
 import cv2
 import numpy as np
 import copy
+
+import matplotlib.pyplot as plt
+#
+#
+# plt.ylim(1, 972)
+# plt.xlim(1, 489)
+#
+# # x-axis values
+# x = [80, 110, 372, 40, 230, 352]
+# # y-axis values
+# y = [280, 650, 259, 600, 232, 674]
+#
+# x1 = [15.4, 100.6, 410.6, 50.6, 299.1, 447.7]
+# y1 = [202.2, 609.2, 239.7, 563.8, 175.6, 624.1]
+#
+# annotations=["Point-1","Point-2","Point-3","Point-4","Point-5", "Point-6"]
+#
+# plt.ylim(1, 9720)
+# plt.xlim(1, 4890)
+# fig, ax = plt.subplots()
+# ax.scatter(x, y,label="Real", color="green",marker="1", s=30)
+# ax.scatter(x1, y1,label="Detection", color="red", marker="1", s=30)
+# for i, annotations in enumerate(annotations):
+#     ax.annotate(annotations, (x1[i], y1[i]))
+#     ax.annotate(annotations, (x[i], y[i]))
+#
+# #
+# # for v, annotations in enumerate(annotations):
+# #     ax.annotate(annotations, (x[i], y[i]))
+#
+#
+#
+# # x-axis label
+# plt.xlabel('y - axis ')
+# # frequency label
+# plt.ylabel('x - axis (camera position)')
+# # plot title
+# plt.title('Uncalibrated for scenario distort')
+# # showing legend
+# plt.legend()
+#
+# # function to show the plot
+# plt.show()
+
+
+
+
+# plt.ylim(1, 972)
+# plt.xlim(1, 489)
+#
+# # x-axis values
+# x = [ 100, 70, 352]
+# # y-axis values
+# y = [ 265, 650, 538]
+#
+# x1 = [123.6, 82.7  , 401.4 ]
+# y1 = [181.8, 600.3, 470.1 ]
+#
+# annotations=["Point-1","Point-2","Point-3"]
+#
+# plt.ylim(-1, 9720)
+# plt.xlim(-1, 4890)
+# fig, ax = plt.subplots()
+# ax.scatter(x, y,label="Real", color="green",marker="1", s=30)
+# ax.scatter(x1, y1,label="Detection", color="red", marker="1", s=30)
+# for i, annotations in enumerate(annotations):
+#     ax.annotate(annotations, (x1[i], y1[i]))
+#     ax.annotate(annotations, (x[i], y[i]))
+#
+#
+#
+# # x-axis label
+# plt.xlabel('y - axis ')
+# # frequency label
+# plt.ylabel('x - axis (camera position)')
+# # plot title
+# plt.title('Calibration attempt 1, same angle')
+# # showing legend
+# plt.legend()
+#
+# # function to show the plot
+# plt.show()
+
+plt.ylim(1, 970)
+plt.xlim(1, 470)
+
+# x-axis values
+x = [129,225,305 ,152, 255,410]
+# y-axis values
+y = [615,276, 410, 441,473,469]
+
+x1 = [126.3, 233.4 , 319.7, 151.6, 260.2,417.7 ]
+y1 = [613.6, 271.3, 389.5,  426.6, 477.1,452.3]
+
+annotations=["Point-1","Point-2","Point-3","Point-4","Point-5", "Point-6"]
+
+fig, ax = plt.subplots()
+ax.scatter(x, y,label="Real", color="green",marker="1", s=30)
+ax.scatter(x1, y1,label="Detection", color="red", marker="1", s=30)
+for i, annotations in enumerate(annotations):
+    ax.annotate(annotations, (x1[i], y1[i]))
+    ax.annotate(annotations, (x[i], y[i]))
+
+
+
+# x-axis label
+plt.xlabel('y - axis ')
+# frequency label
+plt.ylabel('x - axis (camera position)')
+# plot title
+plt.title('Higher Camera Postion')
+# showing legend
+plt.legend()
+
+# function to show the plot
+plt.show()
+
+
+from objectDataSave import *
+# import json
+#
+#
+# # function to seperte x,y of objects from objects
+# def jsonReadTest():
+#     j = open("objects.json", 'r')
+#     data = j.read()
+#     obj = json.loads(data)
+#     list = obj['objects']
+#     e = list[3].get("p1")
+#     e = e.split(" ")
+#
+#     x = e[0]
+#     y = e[1]
+#     x = x.replace("[", "")
+#     y = y.replace("]", "")
+#     int(x)
+#     int(y)
+#
+#     print(x, y)
+#
+#
+# # test for data read for ROS side
+# # with this, we can iterate actions per number of elements in Json file
+#
+# def jsonReadTest2():
+#     j = open("objects.json", 'r')
+#     data = j.read()
+#     obj = json.loads(data)
+#     list = obj['objects']
+#
+#     num_of_objects = len(list)
+#
+#     print(len(list))
+#
+#     for i in range(num_of_objects):
+#         if i != 0:
+#             cx = list[i].get("object type")
+#            # cy = list[i].get("centre Y")
+#
+#             str(cx)
+#             #int(cy)
+#
+#             print(cx )#
+#
+#
+# def specify_object():
+#     j = open("objects.json", 'r')
+#     data = j.read()
+#     obj = json.loads(data)
+#     list = obj['objects']
+#     print(list)
+#
+#     goog =(len(obj['objects']))-1
+#
+#     print(goog)
+#
+#     for i in range(goog):
+#         print("yess")
+#
+#
+#
+#     usr_inp = int(input("Specify object to focus on (enter single digit) \n"))
+#
+#     g = list[usr_inp]
+#
+#     nn = json.dumps(g,indent=4)
+#
+#     print(nn)
+#
+#
+#
+# if __name__ == '__main__':
+#     specify_object()
+#     jsonReadTest2()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # #https://www.geeksforgeeks.org/displaying-the-coordinates-of-the-points-clicked-on-the-image-using-python-opencv/
 #
@@ -20,15 +231,6 @@ import copy
 #
 # plt.show()
 #
-largeTestTube = [120, 50]
-smallTestTube = [120, 30]
-petriDish = [100, 100]
-
-largeTestTube[0]
-largeTestTube[1]
-
-answer = largeTestTube[0] - 20
-print(answer)
 
 
 #
